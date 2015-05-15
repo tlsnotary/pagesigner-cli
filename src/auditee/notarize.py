@@ -288,6 +288,7 @@ def decrypt_html(pms2, tlsn_session,sf):
     '''Receive correct server mac key and then decrypt server response (html),
     (includes authentication of response). Submit resulting html for browser
     for display (optionally render by stripping http headers).'''
+    print ("\nStarting decryption of content, may take a few seconds...")
     try:
         tlsn_session.auditor_secret = pms2[:tlsn_session.n_auditor_entropy]
         tlsn_session.set_auditor_secret()
@@ -320,6 +321,7 @@ def decrypt_html_stage2(plaintext, tlsn_session, sf):
         html_path = join(commit_dir,'forbrowser-'+sf+'.html')
         with open(html_path,'wb') as f:
             f.write('\r\n\r\n'.join(plaintext.split('\r\n\r\n')[1:]))
+    print ("Decryption complete.")
     return ('success',html_path)
 
 #unpack and check validity of Python modules
