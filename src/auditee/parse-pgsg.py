@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-
+import tarfile
 from hashlib import md5, sha1, sha256
 from os.path import join
 import sys, os
@@ -45,10 +45,8 @@ def extract_audit_data(audit_filename):
         chain=[]
         while (offset < chain_serialized_len):
             l = shared.ba2int(chain_serialized[offset:offset+3])
-            print ("processing a cert of len: ", l)
             offset += 3
             cert = chain_serialized[offset:offset+l]
-            print ("made a cert of len: ", len(cert))
             offset += l
             chain.append(cert)
         
@@ -96,12 +94,9 @@ if __name__ == "__main__":
     audit_data = extract_audit_data(sys.argv[1])
     for i,c in enumerate(audit_data['certs']):
         with open(str(i)+'.der','wb') as f:
-            #f.write(shared.bi2ba(len(c),fixed=3))
-            print ("got cert with len: ",len(c))
             f.write(c)
             
     with open('fullcert','wb') as f:
-        print ("Length of full cert: ", len(audit_data['fullcert']))
         f.write(shared.bi2ba(len(audit_data['fullcert']),fixed=3))
         f.write(audit_data['fullcert'])
     
