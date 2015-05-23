@@ -1,10 +1,4 @@
 from __future__ import print_function
-
-'''HOW TO USE
-First, you need an API key and API secret from Bitfinex,
-available on the website. These are alphanumeric strings.
-Write them as the first two lines in a file anywhere on disk.
-Then, run the script as '''
 import requests
 import json
 import base64
