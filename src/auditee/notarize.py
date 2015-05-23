@@ -4,11 +4,11 @@ from __future__ import print_function
 from base64 import b64decode, b64encode
 from hashlib import md5, sha1, sha256
 from os.path import join
-from subprocess import Popen, check_output
 import binascii, hmac, os, platform,  tarfile
 import Queue, random, re, shutil, signal, sys, time
 import SimpleHTTPServer, socket, threading, zipfile
-import string
+import string, json
+from optparse import OptionParser
 from oracles import check_oracle, oracle, oracle_modulus
 try: import wingdbstub
 except: pass
@@ -324,6 +324,16 @@ def decrypt_html_stage2(plaintext, tlsn_session, sf):
     print ("Decryption complete.")
     return ('success',html_path)
 
+def get_headers(hpath):
+    #assumed in json format
+    with open(hpath,'rb') as f:
+        json_headers = json.loads(f.read())
+    print (json_headers)
+    headers_as_string = ''
+    for h in json_headers:
+        headers_as_string += bytearray(h,'utf-8') +':'+bytearray(json_headers[h],'utf-8')+' \r\n'
+    return headers_as_string
+
 #unpack and check validity of Python modules
 def first_run_check(modname,modhash):
     if not modhash: return
@@ -367,20 +377,37 @@ if __name__ == "__main__":
     if int(shared.config.get("General","use_paillier_scheme")) == 1:
         global_use_paillier = True    
     
-    if (len(sys.argv)>2):
-        if sys.argv[2] != 'awscheck':
-            raise Exception("Invalid argument")
-        else:
-            main_pubkey = {'pubkey':''}
-            check_oracle(oracle['main'],'main', main_pubkey)
-            check_oracle(oracle['sig'],'sig', main_pubkey)
-        
-    host = sys.argv[1].split('/')[0]
-    url = '/'.join(sys.argv[1].split('/')[1:])
+    parser = OptionParser(usage='usage: %prog [options] url',
+            description='Automated notarization of the response to an https'
+            + ' request made to the url \'url\' , with https:// omitted.'
+            )
+    parser.add_option('-e', '--header-file', action="store", type="string", dest='header_path',
+            help='if specified, the path to the file containing the HTTP headers to'
+            +' be used in the request, in json format.')
+    parser.add_option('-a', '--aws-query-check', action='store_true', dest='awscheck',
+             help='if set, %prog will perform a check of the PageSigner AWS oracle to verify it.' 
+             + 'This takes a few seconds.')
+    (options, args) = parser.parse_args()
+    if len(args) != 1:
+        parser.error('Need a url to notarize')
+        exit(1)
+    
+    url_raw = args[0]
+    if options.awscheck:
+        main_pubkey = {'pubkey':''}
+        check_oracle(oracle['main'],'main', main_pubkey)
+        check_oracle(oracle['sig'],'sig', main_pubkey)   
+    host = url_raw.split('/')[0]
+    url = '/'.join(url_raw.split('/')[1:])
+    print ('using host', host)
     server_mod = probe_server_modulus(host)
-    #TODO obv needs to be configurable, best to have whole http request read in from a file
-    headers = "GET" + " /" + url + " HTTP/1.1" + "\r\n" + "Host: " + host + "\r\n\r\n"
+    headers = "GET" + " /" + url + " HTTP/1.1" + "\r\n" + "Host: " + host + "\r\n"
+    x = get_headers(options.header_path) if options.header_path else ''
+    headers += x + "\r\n"
+    
     if start_audit(host, headers, server_mod):
         print ('successfully finished')
+        exit(0)
     else:
         print ('failed to complete notarization')
+        exit(1)
