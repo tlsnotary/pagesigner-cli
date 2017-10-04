@@ -31,7 +31,7 @@ def extract_audit_data(audit_filename):
         if header != 'tlsnotary notarization file\n\n':
             raise Exception("Invalid file format")
         version = f.read(2)
-        if version != '\x00\x01':
+        if version != '\x00\x02':
             raise Exception("Incompatible file version")
         audit_data['cipher_suite'] = shared.ba2int(f.read(2))
         audit_data['client_random'] = f.read(32)
@@ -52,11 +52,12 @@ def extract_audit_data(audit_filename):
         audit_data['oracle_modulus_len'] = f.read(2) #TODO can check this
         audit_data['signature'] = f.read(len(oracle_ba_modulus))
         audit_data['commit_hash'] = f.read(32)
-        audit_data['oracle_modulus'] = f.read()
+        audit_data['oracle_modulus'] = f.read(512)
         if audit_data['oracle_modulus'] != oracle_ba_modulus:
             print ("file mod was: ", binascii.hexlify(audit_data['oracle_modulus']))
             print ("actual was: ", binascii.hexlify(oracle_ba_modulus))
             raise Exception("Unrecognized oracle")
+        audit_data['audit_time'] = f.read(4)
     return audit_data
 
 #unpack and check validity of Python modules
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     first_cert_len = shared.ba2int(audit_data['certs'][:3])
     server_mod, server_exp = audit_session.extract_mod_and_exp(certDER=audit_data['certs'][3:3+first_cert_len], sn=True)
     print ('Processing data for server: ', audit_session.server_name)
-    data_to_be_verified = audit_data['commit_hash'] + audit_data['pms2'] + shared.bi2ba(server_mod)
+    data_to_be_verified = audit_data['commit_hash'] + audit_data['pms2'] + shared.bi2ba(server_mod) + audit_data['audit_time']
     data_to_be_verified = sha256(data_to_be_verified).digest()
     if not shared.verify_signature(data_to_be_verified, audit_data['signature'],oracle_int_modulus):
         print ('Audit FAILED. Signature is not verified.')

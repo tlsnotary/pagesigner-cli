@@ -86,13 +86,13 @@ def start_audit(server_name, headers, server_modulus):
     audit_no += 1 #we want to increase only after server responded with data
     sf = str(audit_no)
 
-    commit_hash, pms2, signature = commit_session(tlsn_session, response,sf)
+    commit_hash, pms2, signature, audit_time = commit_session(tlsn_session, response,sf)
     with open(join(current_session_dir,'sigfile'+sf),'wb') as f:
         f.write(signature)
     with open(join(current_session_dir,'commit_hash_pms2_servermod'+sf),'wb') as f:
         f.write(commit_hash+pms2+shared.bi2ba(tlsn_session.server_modulus))
     
-    msg = sha256(commit_hash+pms2+shared.bi2ba(tlsn_session.server_modulus)).digest()
+    msg = sha256(commit_hash+pms2+shared.bi2ba(tlsn_session.server_modulus)+audit_time).digest()
     oracle_ba_modulus = bytearray('').join(map(chr,oracle_modulus))
     oracle_int_modulus = shared.ba2int(oracle_ba_modulus)
     if not shared.verify_signature(msg, signature, oracle_int_modulus):
@@ -100,7 +100,7 @@ def start_audit(server_name, headers, server_modulus):
     
     print ('Verified OK')
     audit_data = 'tlsnotary notarization file\n\n'
-    audit_data += '\x00\x01' #2 version bytes
+    audit_data += '\x00\x02' #2 version bytes
     audit_data += shared.bi2ba(tlsn_session.chosen_cipher_suite,fixed=2) # 2 bytes
     audit_data += tlsn_session.client_random + tlsn_session.server_random # 64 bytes
     audit_data += tlsn_session.pms1 + pms2 #48 bytes
@@ -118,6 +118,7 @@ def start_audit(server_name, headers, server_modulus):
     audit_data += signature #512 bytes RSA PKCS 1 v1.5 padding
     audit_data += commit_hash #32 bytes sha256 hash
     audit_data += oracle_ba_modulus
+    audit_data += audit_time
     
     with open(join(current_session_dir,sf+".pgsg"),"wb") as f:
         f.write(audit_data)
@@ -281,7 +282,7 @@ def commit_session(tlsn_session,response,sf):
         raise Exception ('Failed to receive a reply') 
     if not reply[1]=='pms2':
         raise Exception ('bad reply. Expected pms2')    
-    return (commit_hash, reply[2][:24], reply[2][24:])
+    return (commit_hash, reply[2][:24], reply[2][24:536], reply[2][536:540] )
 
 
 def decrypt_html(pms2, tlsn_session,sf):
@@ -394,9 +395,7 @@ if __name__ == "__main__":
     
     url_raw = args[0]
     if options.awscheck:
-        main_pubkey = {'pubkey':''}
-        check_oracle(oracle['main'],'main', main_pubkey)
-        check_oracle(oracle['sig'],'sig', main_pubkey)   
+        check_oracle(oracle)
     host = url_raw.split('/')[0]
     url = '/'.join(url_raw.split('/')[1:])
     print ('using host', host)

@@ -16,7 +16,7 @@ def extract_audit_data(audit_filename):
         if header != 'tlsnotary notarization file\n\n':
             raise Exception("Invalid file format")
         version = f.read(2)
-        if version != '\x00\x01':
+        if version != '\x00\x02':
             raise Exception("Incompatible file version")
         audit_data['cipher_suite'] = shared.ba2int(f.read(2))
         audit_data['client_random'] = f.read(32)
