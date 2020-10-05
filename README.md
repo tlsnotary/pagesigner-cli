@@ -1,3 +1,10 @@
+For PageSigner2 browserless notarizations, see https://github.com/tlsnotary/pagesigner/tree/master/webextension/content/pgsg-node
+
+UPDATE October 2020. This repository works only for pre-v2 PageSigner. You will have to set up your own oracle server and modify the values in /src/shared/tlsnotary.ini as well as change the pubkeys in /src/shared/pubkeys.txt. Also the server being notarized must support TLS 1.0 or TLS 1.1.
+
+ 
+
+
 # Browserless PageSigner #
 
 A set of tools to create and use PageSigner format notarization files.
