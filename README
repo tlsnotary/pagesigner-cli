@@ -1,4 +1,4 @@
-pgsg-node.js allows you to run PageSigner without the browser using nodejs >= v.15.0
+pgsg-node.js allows you to run PageSigner with nodejs >= v.15.0
 
 Clone this repo with:
 git clone --recurse-submodules https://github.com/tlsnotary/pagesigner-cli
@@ -13,7 +13,7 @@ GET /r/worldnews/ HTTP/1.1
 Host: www.reddit.com <---first /r/n
 <---second /r/n
 
-Note that there are two carriage returns '/r/n/r/n' after the last header's last letter  
+As shown above, there are two carriage returns '/r/n/r/n' after the last header's last letter.
 
 
 

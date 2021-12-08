@@ -174,24 +174,17 @@ async function main (){
         let circuits
         if (fs.existsSync(psPath)) {
             // load cached serialized circuits
-            circuits = JSON.parse(fs.readFileSync(psPath))
-            const gatesBlob = fs.readFileSync(gbPath)
-            let o = 0
-            for (const [k, v] of Object.entries(circuits)) {
-                const itemLen = ba2int(gatesBlob.slice(o, o+=4))
-                circuits[k]['gatesBlob'] = gatesBlob.slice(o, o+=itemLen)
-            }
+            circuits = JSON.parse(fs.readFileSync(psPath))            
         } else {
             // run first time setup
-            let gatesBlob = Buffer.alloc(0);
             circuits = await new FirstTimeSetup().start();
             for (const [k, v] of Object.entries(circuits)) {
-                const blob = circuits[k]['gatesBlob']
-                gatesBlob = Buffer.concat([gatesBlob, int2ba(blob.length, 4), blob])
-                circuits[k]['gatesBlob'] = {}
+                circuits[k]['gatesBlob'] = b64encode(circuits[k]['gatesBlob'])
             }
             fs.writeFileSync(psPath, Buffer.from(JSON.stringify(circuits)))
-            fs.writeFileSync(gbPath, gatesBlob)
+        }
+        for (const [k, v] of Object.entries(circuits)) {
+            circuits[k]['gatesBlob'] = b64decode(circuits[k]['gatesBlob'])
         }
       
         // prepare root store certificates
@@ -204,6 +197,7 @@ async function main (){
 
         const m = new Main();
         m.trustedOracle = await setupNotary();
+        // start the actual notarization
         const session = new TLSNotarySession(
             server, 443, headers, m.trustedOracle, globals.sessionOptions, circuits, null);
         const obj = await session.start();
