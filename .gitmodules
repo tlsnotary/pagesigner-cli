@@ -1,0 +1,3 @@
+[submodule "pagesigner"]
+	path = pagesigner
+	url = https://github.com/tlsnotary/pagesigner

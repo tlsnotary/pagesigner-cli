@@ -1,0 +1,31 @@
+pgsg-node.js allows you to run PageSigner with nodejs >= v.15.0
+
+Clone this repo with:
+git clone --recurse-submodules https://github.com/tlsnotary/pagesigner-cli
+Install dependencies by running inside the pagesigner-cli directory:
+npm ci
+
+
+NB! You must supply the file with HTTP headers with --headers path/to/headers
+The most basic headers file looks like this:
+
+GET /r/worldnews/ HTTP/1.1
+Host: www.reddit.com <---first /r/n
+<---second /r/n
+
+As shown above, there are two carriage returns '/r/n/r/n' after the last header's last letter.
+
+
+
+
+Usage: ./pgsg-node.js <command> [arguments]
+
+where <command> is one of notarize, verify
+
+Examples:
+
+./pgsg-node.js notarize example.com --headers headers.txt
+Notarize example.com using HTTP headers from headers.txt
+
+./pgsg-node.js verify imported.pgsg
+Verify a Pagesigner session from imported.pgsg. This will create a session directory with the decrypted cleartext and the copy of the pgsg file.
