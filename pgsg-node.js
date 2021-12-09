@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {int2ba, ba2int, assert, b64decode, b64encode} from './pagesigner/core/utils.js'
+import {assert, b64decode, b64encode} from './pagesigner/core/utils.js'
 import {parse_certs} from './pagesigner/core/verifychain.js';
 import {verifyNotary, getURLFetcherDoc} from './pagesigner/core/oracles.js';
 import {FirstTimeSetup} from './pagesigner/core/FirstTimeSetup.js';
