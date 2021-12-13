@@ -10,10 +10,10 @@ NB! You must supply the file with HTTP headers with --headers path/to/headers
 The most basic headers file looks like this:
 
 GET /r/worldnews/ HTTP/1.1
-Host: www.reddit.com <---first /r/n
-<---second /r/n
+Host: www.reddit.com <---first /n
+<---second /n
 
-As shown above, there are two carriage returns '/r/n/r/n' after the last header's last letter.
+As shown above, there are two newlines '/n/n' after the last header's last letter.
 
 
 
