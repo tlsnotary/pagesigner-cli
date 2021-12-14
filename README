@@ -6,17 +6,6 @@ Install dependencies by running inside the pagesigner-cli directory:
 npm ci
 
 
-NB! You must supply the file with HTTP headers with --headers path/to/headers
-The most basic headers file looks like this:
-
-GET /r/worldnews/ HTTP/1.1
-Host: www.reddit.com <---first /n
-<---second /n
-
-As shown above, there are two newlines '/n/n' after the last header's last letter.
-
-
-
 
 Usage: ./pgsg-node.js <command> [arguments]
 
@@ -26,6 +15,10 @@ Examples:
 
 ./pgsg-node.js notarize example.com --headers headers.txt
 Notarize example.com using HTTP headers from headers.txt
+The most basic headers file can look like this:
+
+GET /r/worldnews/ HTTP/1.1
+Host: www.reddit.com
 
 ./pgsg-node.js verify imported.pgsg
 Verify a Pagesigner session from imported.pgsg. This will create a session directory with the decrypted cleartext and the copy of the pgsg file.

@@ -191,9 +191,28 @@ async function main (){
         const rootStorePath = Path.join(__dirname, 'pagesigner', 'core', 'third-party', 'certs.txt')
         await parse_certs(fs.readFileSync(rootStorePath).toString());
 
-        var server = argv[3]
-        var headersfile = Path.join(__dirname, argv[5])
-        var headers = fs.readFileSync(headersfile).toString().replace(/\n/g, '\r\n')
+        const server = argv[3]
+        const headersfile = Path.join(__dirname, argv[5])
+       
+        // split into lines keeping the delimiter at the end of each line
+        const lines = fs.readFileSync(headersfile).toString().split(/(?<=\r\n|\n)/);
+        let headers = ''
+        let blankLineWasFound = false
+        for (let i=0; i < lines.length; i++){
+            if (blankLineWasFound){ // keep request body as it is
+                headers += lines[i]
+            }
+            else if (i > 0 && ['\r\n', '\n'].includes(lines[i])){ // a blank line was found
+                blankLineWasFound = true
+                headers += '\r\n'
+            }
+            else { // replace whatever delimiter is at the end with /r/n
+                headers += lines[i].split(/\r\n|\n/)[0]+ '\r\n'
+            } 
+        }
+        if (! blankLineWasFound){
+            headers += '\r\n'
+        }
 
         const m = new Main();
         m.trustedOracle = await setupNotary();
