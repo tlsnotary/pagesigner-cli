@@ -1,3 +1,9 @@
+//---------------------------------------------------------------------------------//
+Update May 2022: We are actively working on a TLSNotary implementation in Rust here:
+https://github.com/tlsnotary/tlsn/
+When the Rust implementation is ready, it will replace this nodejs-based tool.
+//---------------------------------------------------------------------------------//
+
 pgsg-node.js allows you to run PageSigner with nodejs >= v 16.5.0
 
 Clone this repo with:
